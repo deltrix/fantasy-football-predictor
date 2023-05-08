@@ -113,19 +113,19 @@ def readJSON(year):
         passing_stats = BeautifulSoup(j)
     with open('json/pa' + year + 'head.json', newline='', encoding='utf-8') as file:
         j = json.load(file)
-        passing_headers = BeautifulSoup(j)
+        passing_headers = j
     with open('json/ru' + year + 'raw.json', newline='', encoding='utf-8') as file:
         j = json.load(file)
         rushing_stats = BeautifulSoup(j)
     with open('json/ru' + year + 'head.json', newline='', encoding='utf-8') as file:
         j = json.load(file)
-        rushing_headers = BeautifulSoup(j)
+        rushing_headers = j
     with open('json/re' + year + 'raw.json', newline='', encoding='utf-8') as file:
         j = json.load(file)
         receiving_stats = BeautifulSoup(j)
     with open('json/re' + year + 'head.json', newline='', encoding='utf-8') as file:
         j = json.load(file)
-        receiving_headers = BeautifulSoup(j)
+        receiving_headers = j
 
 
     return passing_stats, rushing_stats, receiving_stats, passing_headers, rushing_headers, receiving_headers
@@ -160,10 +160,11 @@ def main():
 
 
     # Table headers and table rows ==================================================
+    print("---Table headers and table rows")
 
-    passing = [] * years
-    receiving = []  * years
-    rushing = []  * years
+    passing = [[] for i in range(years)]
+    receiving = [[] for i in range(years)]
+    rushing = [[] for i in range(years)]
 
     for i in range(years):
         rows = passing_stats[i].findAll('tr')[1:]
@@ -179,14 +180,13 @@ def main():
         for x in range(len(rows)):
             rushing[i].append([col.getText() for col in rows[x].findAll('td')])
 
-    for entry in rushing_stats[20]:    # Check if works
-        print(entry)
-    # print(passing_col_headers)
-    # print(rushing_col_headers)
+    #print(passing_headers[22])
+    #print(rushing_headers[22])
     # print(receiving_col_headers)
 
 
     # Create the dataframes ==================================================
+    print("---Create the dataframes")
 
     rushing_data = []
     receiving_data= []
@@ -194,17 +194,17 @@ def main():
 
     for i in range(years):
 
-        df_ru = pd.DataFrame(rushing_stats[i], columns=rushing_headers[i][1:])
+        df_ru = pd.DataFrame(rushing[i], columns = rushing_headers[i][1:])
         df_ru.drop(columns=["1D", "Lng"], axis=1, inplace=True)
         df_ru.rename(columns={'Att':'Rush_Att', 'Yds':'Rush_Yds', 'Y/A':'Rush_Y/A', 'Y/G':'Rush_Y/G', 'TD':'Rush_TD'}, inplace=True)
         rushing_data.append(df_ru)
 
-        df_re = pd.DataFrame(receiving_stats[i], columns = receiving_headers[i][1:])
+        df_re = pd.DataFrame(receiving[i], columns = receiving_headers[i][1:])
         df_re.drop(columns=["1D", 'Ctch%', 'Lng'], axis=1, inplace=True)
         df_re.rename(columns={'Yds':'Receiving_Yds', 'Y/G':'Receiving_Y/G', 'TD':'Receiving_TD'})
         receiving_data.append(df_re)
 
-        df_pa = pd.DataFrame(passing_stats[i], columns = passing_headers[i][1:])
+        df_pa = pd.DataFrame(passing[i], columns = passing_headers[i][1:])
         new_cols = df_pa.columns.values
         new_cols[-6] = 'Yds_Sacked'
         df_pa.columns = new_cols
@@ -224,6 +224,7 @@ def main():
 
 
     # Merge our dataframes to create one overall dataframe ==================================================
+    print("---Merge our dataframes to create one overall dataframe")
 
     df = [] * years
     for i in range(years):
@@ -245,6 +246,7 @@ def main():
 
 
     # Create categories to convert types ==================================================
+    print("---Create categories to convert types")
 
     categories = ['Age', 'Rush_Att', 'Rush_Yds', 'Rush_TD', 'Rush_Y/A',	'Rush_Y/G',	'Tgt',	'Rec',	'Receiving_Yds',	'Y/R',	'Receiving_TD',	'Y/Tgt',	'R/G',	'Receiving_Y/G',	'Cmp',	'Pass_Att',	'Passing_Yds',	'Pass_TD',	'Int',	'AY/A',	'Y/C',	'Pass_Y/G',	'Rate',	'Sk',	'ANY/A',	'Fumbles',	'Games_Played',	'Games_Started']
 
@@ -256,6 +258,7 @@ def main():
 
 
     # Touchdowns and Fantasy Points ==================================================
+    print("---Touchdowns and Fantasy Points")
 
     # Add up touchdowns as they are worth the same amount of points 
     for i in range(years):
@@ -281,6 +284,7 @@ def main():
     # ==================================================
     # Linear Regression ==================================================
     # ==================================================
+    print("---Linear Regression")
 
     chosen_year = 22
 
@@ -429,6 +433,7 @@ def main():
     # ==================================================
     # Ridge Regression ==================================================
     # ==================================================
+    print("---Ridge Regression")
 
     chosen_year = 21
 
