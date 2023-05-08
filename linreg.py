@@ -112,19 +112,25 @@ def readJSON(year):
         j = json.load(file)
         passing_stats = BeautifulSoup(j)
     with open('json/pa' + year + 'head.json', newline='', encoding='utf-8') as file:
-        j = json.load(file)
+        s = json.load(file)
+        j = s[1:-1].split(',')
+        j = [s.replace(" ", "").replace("'", "") for s in j]
         passing_headers = j
     with open('json/ru' + year + 'raw.json', newline='', encoding='utf-8') as file:
         j = json.load(file)
         rushing_stats = BeautifulSoup(j)
     with open('json/ru' + year + 'head.json', newline='', encoding='utf-8') as file:
-        j = json.load(file)
+        s = json.load(file)
+        j = s[1:-1].split(',')
+        j = [s.replace(" ", "").replace("'", "") for s in j]
         rushing_headers = j
     with open('json/re' + year + 'raw.json', newline='', encoding='utf-8') as file:
         j = json.load(file)
         receiving_stats = BeautifulSoup(j)
     with open('json/re' + year + 'head.json', newline='', encoding='utf-8') as file:
-        j = json.load(file)
+        s = json.load(file)
+        j = s[1:-1].split(',')
+        j = [s.replace(" ", "").replace("'", "") for s in j]
         receiving_headers = j
 
 
@@ -182,8 +188,8 @@ def main():
 
     #print(passing_headers[22])
     #print(rushing_headers[22])
-    # print(receiving_col_headers)
-
+    #print(receiving_headers[22])
+    # all good
 
     # Create the dataframes ==================================================
     print("---Create the dataframes")
@@ -193,40 +199,53 @@ def main():
     passing_data = []
 
     for i in range(years):
-
+        #print("i is " + str(i))
+        
         df_ru = pd.DataFrame(rushing[i], columns = rushing_headers[i][1:])
-        df_ru.drop(columns=["1D", "Lng"], axis=1, inplace=True)
+        columns_to_drop = ["1D", "Lng"]
+        columns_existing = [col for col in columns_to_drop if col in df_ru.columns]
+        if columns_existing:
+            df_ru.drop(columns=columns_existing, axis=1, inplace=True)
         df_ru.rename(columns={'Att':'Rush_Att', 'Yds':'Rush_Yds', 'Y/A':'Rush_Y/A', 'Y/G':'Rush_Y/G', 'TD':'Rush_TD'}, inplace=True)
         rushing_data.append(df_ru)
 
         df_re = pd.DataFrame(receiving[i], columns = receiving_headers[i][1:])
-        df_re.drop(columns=["1D", 'Ctch%', 'Lng'], axis=1, inplace=True)
-        df_re.rename(columns={'Yds':'Receiving_Yds', 'Y/G':'Receiving_Y/G', 'TD':'Receiving_TD'})
+        columns_to_drop = ["1D", "Ctch%", "Lng"]
+        columns_existing = [col for col in columns_to_drop if col in df_re.columns]
+        if columns_existing:
+            df_re.drop(columns=columns_existing, axis=1, inplace=True)
+        df_re.rename(columns={'Yds':'Receiving_Yds', 'Y/G':'Receiving_Y/G', 'TD':'Receiving_TD'}, inplace=True)
         receiving_data.append(df_re)
 
         df_pa = pd.DataFrame(passing[i], columns = passing_headers[i][1:])
         new_cols = df_pa.columns.values
         new_cols[-6] = 'Yds_Sacked'
         df_pa.columns = new_cols
-        df_pa.drop(columns=['QBrec','Yds_Sacked', 'Sk%', '4QC', 'GWD', 'NY/A', 'TD%', 'Int%', '1D', 'Y/A', 'Lng', 'QBR', 'Cmp%'], axis=1, inplace=True)
-        df_pa.rename(columns={'Yds':'Passing_Yds', 'Att':'Pass_Att', 'Y/G':'Pass_Y/G', 'TD':'Pass_TD'})
+        columns_to_drop = ['QBrec','Yds_Sacked', 'Sk%', '4QC', 'GWD', 'NY/A', 'TD%', 'Int%', '1D', 'Y/A', 'Lng', 'QBR', 'Cmp%']
+        columns_existing = [col for col in columns_to_drop if col in df_pa.columns]
+        if columns_existing:
+            df_pa.drop(columns=columns_existing, axis=1, inplace=True)
+        df_pa.rename(columns={'Yds':'Passing_Yds', 'Att':'Pass_Att', 'Y/G':'Pass_Y/G', 'TD':'Pass_TD'}, inplace=True)
         passing_data.append(df_pa)
 
-        receiving_data[i]['Player'] = receiving_data[i]['Player'].str.replace('*', '', regex = True)
-        rushing_data[i]['Player'] = rushing_data[i]['Player'].str.replace('*', '', regex = True)
-        passing_data[i]['Player'] = passing_data[i]['Player'].str.replace('*', '', regex = True)
+        receiving_data[i]['Player'] = receiving_data[i]['Player'].str.replace('*', '', regex = False)
+        receiving_data[i]['Player'] = receiving_data[i]['Player'].str.replace('+', '', regex = False)
+        rushing_data[i]['Player'] = rushing_data[i]['Player'].str.replace('*', '', regex = False)
+        rushing_data[i]['Player'] = rushing_data[i]['Player'].str.replace('+', '', regex = False)
+        passing_data[i]['Player'] = passing_data[i]['Player'].str.replace('*', '', regex = False)
+        passing_data[i]['Player'] = passing_data[i]['Player'].str.replace('+', '', regex = False)
 
         rushing_data[i] = rushing_data[i].dropna()
         receiving_data[i] = receiving_data[i].dropna()
         passing_data[i] = passing_data[i].dropna()
 
-    rushing_data[years].head()   # Check if works 
+    rushing_data[22].head()   # Check if works 
 
 
     # Merge our dataframes to create one overall dataframe ==================================================
     print("---Merge our dataframes to create one overall dataframe")
 
-    df = [] * years
+    df = [[] for i in range(years)]
     for i in range(years):
         WR_RB_df = pd.merge(rushing_data[i], receiving_data[i], on='Player', how='outer')
         df[i] = pd.merge(WR_RB_df, passing_data[i], on='Player', how='outer')
