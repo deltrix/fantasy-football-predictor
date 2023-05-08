@@ -1,6 +1,11 @@
 import argparse
 import sys
 
+import csv
+import os
+
+import time
+
 # Import scraping modules
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
@@ -22,10 +27,6 @@ from sklearn.svm import SVC
 from sklearn.linear_model import Ridge
 from sklearn.linear_model import SGDRegressor
 
-#Import file writing modeles
-import csv
-import os
-
 def parse_stats(year):
 
     # Page URL
@@ -36,18 +37,19 @@ def parse_stats(year):
     # Open and Pass url to Beautiful Soup
     html = urlopen(passing_url)
     passing_stats = BeautifulSoup(html)
+    time.sleep(5)
     html = urlopen(rushing_url)
     rushing_stats = BeautifulSoup(html)
+    time.sleep(5)
     html = urlopen(receiving_url)
     receiving_stats = BeautifulSoup(html)
+    time.sleep(5)
 
     # Headers
     passing_col_headers = passing_stats.findAll('tr')[0]
     passing_col_headers = [i.getText() for i in passing_col_headers.findAll('th')]
-
     rushing_col_headers = rushing_stats.findAll('tr')[1]
     rushing_col_headers = [i.getText() for i in rushing_col_headers.findAll('th')]
-
     receiving_col_headers = receiving_stats.findAll('tr')[0]
     receiving_col_headers = [i.getText() for i in receiving_col_headers.findAll('th')]
 
@@ -68,21 +70,36 @@ def writeCSV(headers, filename):
 
 def main():
 
-    parse_stats("2021")
-    passing_2022_stats, rushing_2022_stats, receiving_2022_stats, passing_headers_2022, rushing_headers_2022, receiving_headers_2022 = parse_stats("2022")
-    writeCSV(passing_2022_stats, 'pa2022raw.csv')
-    writeCSV(rushing_2022_stats, 'ru2022raw.csv')
-    writeCSV(receiving_2022_stats, 're2022raw.csv')
+    passing_stats = []
+    passing_headers = []
+    rushing_stats = []
+    rushing_headers = []
+    receiving_stats = []
+    receiving_headers = []
 
-    passing_2021_stats, rushing_2021_stats, receiving_2021_stats, passing_headers_2021, rushing_headers_2021, receiving_headers_2021 = parse_stats("2021")
-    writeCSV(passing_2021_stats, 'pa2021raw.csv')
-    writeCSV(rushing_2021_stats, 'ru2021raw.csv')
-    writeCSV(receiving_2021_stats, 're2021raw.csv')
+    for i in range(10):
+        pa_stats, ru_stats, re_stats, pa_headers, ru_headers, re_headers = parse_stats("200" + str(i))
+        passing_stats.append(pa_stats)
+        rushing_stats.append(ru_stats)
+        receiving_stats.append(re_stats)
+        passing_headers.append(pa_headers)
+        rushing_headers.append(ru_headers)
+        receiving_headers.append(re_headers)
+        writeCSV(passing_stats[i], 'pa200' + str(i) + 'raw.csv')
+        writeCSV(rushing_stats[i], 'ru200' + str(i) + 'raw.csv')
+        writeCSV(receiving_stats[i], 're200' + str(i) + 'raw.csv')
+    for i in range(10, 23):
+        pa_stats, ru_stats, re_stats, pa_headers, ru_headers, re_headers = parse_stats("20" + str(i))
+        passing_stats.append(pa_stats)
+        rushing_stats.append(ru_stats)
+        receiving_stats.append(re_stats)
+        passing_headers.append(pa_headers)
+        rushing_headers.append(ru_headers)
+        receiving_headers.append(re_headers)
+        writeCSV(passing_stats[i], 'pa20' + str(i) + 'raw.csv')
+        writeCSV(rushing_stats[i], 'ru20' + str(i) + 'raw.csv')
+        writeCSV(receiving_stats[i], 're20' + str(i) + 'raw.csv')
 
-    passing_2020_stats, rushing_2020_stats, receiving_2020_stats, passing_headers_2020, rushing_headers_2020, receiving_headers_2020 = parse_stats("2020")
-    writeCSV(passing_2020_stats, 'pa2020raw.csv')
-    writeCSV(rushing_2020_stats, 'ru2020raw.csv')
-    writeCSV(receiving_2020_stats, 're2020raw.csv')
 
 
 if __name__ == '__main__':
