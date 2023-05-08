@@ -3,8 +3,8 @@ import sys
 import os
 
 import json
-import csv
-csv.field_size_limit(100000000)
+# import csv
+# csv.field_size_limit(100000000)
 
 import time
 
@@ -62,42 +62,43 @@ def parse_stats(year):
     return passing_stats, rushing_stats, receiving_stats, passing_col_headers, rushing_col_headers, receiving_col_headers
 
 # read the data from the csv files
-def readCSV(year):
+# realized that csv doesnt work well with BeautifulSoup objects
+# def readCSV(year):
 
-    passing_stats = []
-    passing_headers = []
-    rushing_stats = []
-    rushing_headers = []
-    receiving_stats = []
-    receiving_headers = []
+#     passing_stats = []
+#     passing_headers = []
+#     rushing_stats = []
+#     rushing_headers = []
+#     receiving_stats = []
+#     receiving_headers = []
 
-    with open('csv/pa' + year + 'raw.csv', newline='', encoding='utf-8') as csvfile:
-        reader = csv.reader(csvfile)
-        for row in reader:
-            passing_stats.append(row)
-    with open('csv/pa' + year + 'head.csv', newline='', encoding='utf-8') as csvfile:
-        reader = csv.reader(csvfile)
-        for row in reader:
-            passing_headers = row
-    with open('csv/ru' + year + 'raw.csv', newline='', encoding='utf-8') as csvfile:
-        reader = csv.reader(csvfile)
-        for row in reader:
-            rushing_stats.append(row)
-    with open('csv/ru' + year + 'head.csv', newline='', encoding='utf-8') as csvfile:
-        reader = csv.reader(csvfile)
-        for row in reader:
-            rushing_headers = row
-    with open('csv/re' + year + 'raw.csv', newline='', encoding='utf-8') as csvfile:
-        reader = csv.reader(csvfile)
-        for row in reader:
-            receiving_stats.append(row)
-    with open('csv/re' + year + 'head.csv', newline='', encoding='utf-8') as csvfile:
-        reader = csv.reader(csvfile)
-        for row in reader:
-            receiving_headers = row
+#     with open('csv/pa' + year + 'raw.csv', newline='', encoding='utf-8') as csvfile:
+#         reader = csv.reader(csvfile)
+#         for row in reader:
+#             passing_stats.append(row)
+#     with open('csv/pa' + year + 'head.csv', newline='', encoding='utf-8') as csvfile:
+#         reader = csv.reader(csvfile)
+#         for row in reader:
+#             passing_headers = row
+#     with open('csv/ru' + year + 'raw.csv', newline='', encoding='utf-8') as csvfile:
+#         reader = csv.reader(csvfile)
+#         for row in reader:
+#             rushing_stats.append(row)
+#     with open('csv/ru' + year + 'head.csv', newline='', encoding='utf-8') as csvfile:
+#         reader = csv.reader(csvfile)
+#         for row in reader:
+#             rushing_headers = row
+#     with open('csv/re' + year + 'raw.csv', newline='', encoding='utf-8') as csvfile:
+#         reader = csv.reader(csvfile)
+#         for row in reader:
+#             receiving_stats.append(row)
+#     with open('csv/re' + year + 'head.csv', newline='', encoding='utf-8') as csvfile:
+#         reader = csv.reader(csvfile)
+#         for row in reader:
+#             receiving_headers = row
 
 
-    return passing_stats, rushing_stats, receiving_stats, passing_headers, rushing_headers, receiving_headers
+#    return passing_stats, rushing_stats, receiving_stats, passing_headers, rushing_headers, receiving_headers
 
 def readJSON(year):
 
@@ -135,6 +136,8 @@ def readJSON(year):
 
 
     return passing_stats, rushing_stats, receiving_stats, passing_headers, rushing_headers, receiving_headers
+
+
 
 def main():
 
