@@ -74,6 +74,13 @@ from sklearn.svm import SVC
 from sklearn.linear_model import Ridge
 from sklearn.linear_model import SGDRegressor
 
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.utils.data import TensorDataset, DataLoader
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+
 pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', None)
 
@@ -1004,3 +1011,92 @@ avg_ridgereg_err = parsed_projections_df['RidgeReg err'].mean()
 
 print("fpts accuracy err = " + str(avg_fpts_err))
 print("ridgereg accuracy err = " + str(avg_ridgereg_err))
+
+
+# NEURAL NETWORKS
+# Load data
+X = df2[['Passing_Yds', 'Rush_Yds', 'Receiving_Yds', 'Pass_TD', 'Rush_TD', 'Receiving_TD', 'Age', 'Fumbles', 'Rush_Att']]
+y = df2['Fantasy_Points']
+
+# Split data into training, validation, and testing sets
+X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
+X_val, X_test, y_val, y_test = train_test_split(X_val, y_val, test_size=0.5, random_state=42)
+
+# Scale features
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_val = scaler.transform(X_val)
+X_test = scaler.transform(X_test)
+
+# Convert data to PyTorch tensors
+X_train = torch.tensor(X_train, dtype=torch.float32)
+y_train = torch.tensor(y_train.values, dtype=torch.float32)
+X_val = torch.tensor(X_val, dtype=torch.float32)
+y_val = torch.tensor(y_val.values, dtype=torch.float32)
+X_test = torch.tensor(X_test, dtype=torch.float32)
+y_test = torch.tensor(y_test.values, dtype=torch.float32)
+
+# Define dataloader objects
+train_dataset = TensorDataset(X_train, y_train)
+val_dataset = TensorDataset(X_val, y_val)
+test_dataset = TensorDataset(X_test, y_test)
+train_dataloader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+val_dataloader = DataLoader(val_dataset, batch_size=32)
+test_dataloader = DataLoader(test_dataset, batch_size=32)
+
+# Define neural network architecture
+class TwoLayerMLP(nn.Module):
+    def __init__(self, hidden_dim=200, dropout_prob=0.0):
+        super(TwoLayerMLP, self).__init__()
+
+        self.layer1 = nn.Linear(in_features=X_train.shape[1], out_features=hidden_dim)
+        self.relu = nn.ReLU()
+        self.dropout = nn.Dropout(p=dropout_prob)
+        self.layer2 = nn.Linear(in_features=hidden_dim, out_features=1)
+
+    def forward(self, x):
+        x = self.layer1(x)
+        x = self.relu(x)
+        x = self.dropout(x)
+        x = self.layer2(x)
+        output = x
+        return output
+
+model = TwoLayerMLP(hidden_dim=64, dropout_prob=0.1)
+
+# Define loss function and optimizer
+criterion = nn.MSELoss()
+optimizer = optim.Adam(model.parameters())
+
+# Train model
+for epoch in range(100):
+    train_loss = 0.0
+    for i, (inputs, targets) in enumerate(train_dataloader):
+        optimizer.zero_grad()
+        outputs = model(inputs)
+        targets = targets.view(-1, 1)  # reshape the target tensor
+        loss = criterion(outputs, targets)
+        loss.backward()
+        optimizer.step()
+        train_loss += loss.item()
+
+    # Compute validation loss
+    val_loss = 0.0
+    with torch.no_grad():
+        for inputs, targets in val_dataloader:
+            outputs = model(inputs)
+            targets = targets.view(-1, 1)  # reshape the target tensor
+            loss = criterion(outputs, targets)
+            val_loss += loss.item()
+
+    print(f"Epoch {epoch+1} - Train Loss: {train_loss/len(train_dataloader):.4f} - Val Loss: {val_loss/len(val_dataloader):.4f}")
+
+# Evaluate model on test set
+with torch.no_grad():
+    test_loss = 0.0
+    for inputs, targets in test_dataloader:
+        outputs = model(inputs)
+        loss = criterion(outputs, targets)
+        test_loss += loss.item()
+
+print(f'Test Loss: {test_loss/len(test_dataloader):.4f}')
