@@ -1,6 +1,7 @@
 import argparse
 import sys
 import csv
+import json
 import os
 import time
 
@@ -17,7 +18,7 @@ def parse_stats(year):
     receiving_url = 'https://www.pro-football-reference.com/years/' + year +'/receiving.htm'
 
     # Set sleep 5 seconds since error 429 occured, expect 15s * 23 = ~5min to run
-    wait = 5
+    wait = 3
     html = urlopen(passing_url)
     passing_stats = BeautifulSoup(html)
     time.sleep(wait)
@@ -49,6 +50,17 @@ def writeCSV(data, filename):
         writer = csv.writer(file)
         writer.writerow(data)
 
+# write data into a json file
+def writeJSON(data, filename):
+
+    folder = "json"
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+    filepath = os.path.join(folder, filename)
+
+    with open(filepath, 'w') as file:
+        json.dump(str(data), file)
+
 
 def main():
 
@@ -64,29 +76,29 @@ def main():
         passing_stats.append(pa_stats)
         rushing_stats.append(ru_stats)
         receiving_stats.append(re_stats)
-        writeCSV(passing_stats[i], 'pa200' + str(i) + 'raw.csv')
-        writeCSV(rushing_stats[i], 'ru200' + str(i) + 'raw.csv')
-        writeCSV(receiving_stats[i], 're200' + str(i) + 'raw.csv')
+        writeJSON(passing_stats[i], 'pa200' + str(i) + 'raw.json')
+        writeJSON(rushing_stats[i], 'ru200' + str(i) + 'raw.json')
+        writeJSON(receiving_stats[i], 're200' + str(i) + 'raw.json')
         passing_headers.append(pa_headers)
         rushing_headers.append(ru_headers)
         receiving_headers.append(re_headers)
-        writeCSV(passing_headers[i], 'pa200' + str(i) + 'head.csv')
-        writeCSV(rushing_headers[i], 'ru200' + str(i) + 'head.csv')
-        writeCSV(receiving_headers[i], 're200' + str(i) + 'head.csv')
+        writeJSON(passing_headers[i], 'pa200' + str(i) + 'head.json')
+        writeJSON(rushing_headers[i], 'ru200' + str(i) + 'head.json')
+        writeJSON(receiving_headers[i], 're200' + str(i) + 'head.json')
     for i in range(10, 23):
         pa_stats, ru_stats, re_stats, pa_headers, ru_headers, re_headers = parse_stats("20" + str(i))
         passing_stats.append(pa_stats)
         rushing_stats.append(ru_stats)
         receiving_stats.append(re_stats)
-        writeCSV(passing_stats[i], 'pa20' + str(i) + 'raw.csv')
-        writeCSV(rushing_stats[i], 'ru20' + str(i) + 'raw.csv')
-        writeCSV(receiving_stats[i], 're20' + str(i) + 'raw.csv')
+        writeJSON(passing_stats[i], 'pa20' + str(i) + 'raw.json')
+        writeJSON(rushing_stats[i], 'ru20' + str(i) + 'raw.json')
+        writeJSON(receiving_stats[i], 're20' + str(i) + 'raw.json')
         passing_headers.append(pa_headers)
         rushing_headers.append(ru_headers)
         receiving_headers.append(re_headers)
-        writeCSV(passing_headers[i], 'pa20' + str(i) + 'head.csv')
-        writeCSV(rushing_headers[i], 'ru20' + str(i) + 'head.csv')
-        writeCSV(receiving_headers[i], 're20' + str(i) + 'head.csv')
+        writeJSON(passing_headers[i], 'pa20' + str(i) + 'head.json')
+        writeJSON(rushing_headers[i], 'ru20' + str(i) + 'head.json')
+        writeJSON(receiving_headers[i], 're20' + str(i) + 'head.json')
 
 
 if __name__ == '__main__':

@@ -2,6 +2,7 @@ import argparse
 import sys
 import os
 
+import json
 import csv
 csv.field_size_limit(100000000)
 
@@ -98,6 +99,37 @@ def readCSV(year):
 
     return passing_stats, rushing_stats, receiving_stats, passing_headers, rushing_headers, receiving_headers
 
+def readJSON(year):
+
+    passing_stats = []
+    passing_headers = []
+    rushing_stats = []
+    rushing_headers = []
+    receiving_stats = []
+    receiving_headers = []
+
+    with open('json/pa' + year + 'raw.json', newline='', encoding='utf-8') as file:
+        j = json.load(file)
+        passing_stats = BeautifulSoup(j)
+    with open('json/pa' + year + 'head.json', newline='', encoding='utf-8') as file:
+        j = json.load(file)
+        passing_headers = BeautifulSoup(j)
+    with open('json/ru' + year + 'raw.json', newline='', encoding='utf-8') as file:
+        j = json.load(file)
+        rushing_stats = BeautifulSoup(j)
+    with open('json/ru' + year + 'head.json', newline='', encoding='utf-8') as file:
+        j = json.load(file)
+        rushing_headers = BeautifulSoup(j)
+    with open('json/re' + year + 'raw.json', newline='', encoding='utf-8') as file:
+        j = json.load(file)
+        receiving_stats = BeautifulSoup(j)
+    with open('json/re' + year + 'head.json', newline='', encoding='utf-8') as file:
+        j = json.load(file)
+        receiving_headers = BeautifulSoup(j)
+
+
+    return passing_stats, rushing_stats, receiving_stats, passing_headers, rushing_headers, receiving_headers
+
 def main():
 
     years = 23
@@ -110,7 +142,7 @@ def main():
     receiving_headers = []
   
     for i in range(10):
-        pa_stats, ru_stats, re_stats, pa_headers, ru_headers, re_headers = parse_stats("200" + str(i))
+        pa_stats, ru_stats, re_stats, pa_headers, ru_headers, re_headers = readJSON("200" + str(i))
         passing_stats.append(pa_stats)
         rushing_stats.append(ru_stats)
         receiving_stats.append(re_stats)
@@ -118,7 +150,7 @@ def main():
         rushing_headers.append(ru_headers)
         receiving_headers.append(re_headers)
     for i in range(10, 23):
-        pa_stats, ru_stats, re_stats, pa_headers, ru_headers, re_headers = parse_stats("20" + str(i))
+        pa_stats, ru_stats, re_stats, pa_headers, ru_headers, re_headers = readJSON("20" + str(i))
         passing_stats.append(pa_stats)
         rushing_stats.append(ru_stats)
         receiving_stats.append(re_stats)
