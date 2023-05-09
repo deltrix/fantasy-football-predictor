@@ -445,7 +445,7 @@ def main():
 
     # Open and Pass url to Beautiful Soup
     html = urlopen(url)
-    projections = BeautifulSoup(html)
+    projections = BeautifulSoup(html, features="lxml")
 
     # Headers
     headers = projections.findAll('tr')[1]
@@ -488,7 +488,7 @@ def main():
 
     # Open and Pass url to Beautiful Soup
     html = urlopen(url)
-    projections = BeautifulSoup(html)
+    projections = BeautifulSoup(html, features="lxml")
 
     # Headers
     headers = projections.findAll('tr')[1]

@@ -315,18 +315,39 @@ def main():
     # Linear Regression Test
     # Choose poistion we want to predict for 
     choice = 'QB'
-    if choice == 'RB':
-        X = df[chosen_year][['Passing_Yds', 'Rush_Yds', 'Receiving_Yds', 'Pass_TD', 'Rush_TD', 'Receiving_TD', 'Age', 'Fumbles', 'Rush_Att']]
-        y = df[chosen_year]['Fantasy_Points'] 
-    elif choice == 'WR':
-        X = df[chosen_year][['Passing_Yds', 'Rush_Yds', 'Receiving_Yds', 'Pass_TD', 'Rush_TD', 'Receiving_TD', 'Age', 'Tgt', 'Rec', 'Fumbles']]
-        y = df[chosen_year]['Fantasy_Points']
-    elif choice == 'QB':
-        X = df[chosen_year][['Passing_Yds', 'Rush_Yds', 'Receiving_Yds', 'Pass_TD', 'Rush_TD', 'Receiving_TD', 'Age', 'Int', 'Sk', 'Rate']]
-        y = df[chosen_year]['Fantasy_Points']
+    # if choice == 'RB':
+    #     X = df[chosen_year][['Passing_Yds', 'Rush_Yds', 'Receiving_Yds', 'Pass_TD', 'Rush_TD', 'Receiving_TD', 'Age', 'Fumbles', 'Rush_Att']]
+    #     y = df[chosen_year]['Fantasy_Points'] 
+    # elif choice == 'WR':
+    #     X = df[chosen_year][['Passing_Yds', 'Rush_Yds', 'Receiving_Yds', 'Pass_TD', 'Rush_TD', 'Receiving_TD', 'Age', 'Tgt', 'Rec', 'Fumbles']]
+    #     y = df[chosen_year]['Fantasy_Points']
+    # elif choice == 'QB':
+    #     X = df[chosen_year][['Passing_Yds', 'Rush_Yds', 'Receiving_Yds', 'Pass_TD', 'Rush_TD', 'Receiving_TD', 'Age', 'Int', 'Sk', 'Rate']]
+    #     y = df[chosen_year]['Fantasy_Points']
+
+    X_list = []
+    y_list = []
+
+    for year in df:
+        choice = 'QB'
+        if choice == 'RB':
+            X = year[['Passing_Yds', 'Rush_Yds', 'Receiving_Yds', 'Pass_TD', 'Rush_TD', 'Receiving_TD', 'Age', 'Fumbles', 'Rush_Att']]
+            y = year['Fantasy_Points'] 
+        elif choice == 'WR':
+            X = year[['Passing_Yds', 'Rush_Yds', 'Receiving_Yds', 'Pass_TD', 'Rush_TD', 'Receiving_TD', 'Age', 'Tgt', 'Rec', 'Fumbles']]
+            y = year['Fantasy_Points']
+        elif choice == 'QB':
+            X = year[['Passing_Yds', 'Rush_Yds', 'Receiving_Yds', 'Pass_TD', 'Rush_TD', 'Receiving_TD', 'Age', 'Int', 'Sk', 'Rate']]
+            y = year['Fantasy_Points']
+        
+        X_list.append(X)
+        y_list.append(y)
+
+    X_all_years = pd.concat(X_list)
+    y_all_years = pd.concat(y_list)
 
     # Split the data into training, validation, and test sets
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X_all_years, y_all_years, test_size=0.2, random_state=42)
 
     model = LinearRegression()
     model.fit(X_train, y_train)
