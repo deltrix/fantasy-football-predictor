@@ -315,6 +315,7 @@ def main():
     # Linear Regression Test
     # Choose poistion we want to predict for 
     choice = 'QB'
+    # this is the original code that only ran linear regression on one year of data
     # if choice == 'RB':
     #     X = df[chosen_year][['Passing_Yds', 'Rush_Yds', 'Receiving_Yds', 'Pass_TD', 'Rush_TD', 'Receiving_TD', 'Age', 'Fumbles', 'Rush_Att']]
     #     y = df[chosen_year]['Fantasy_Points'] 
