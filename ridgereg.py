@@ -311,84 +311,105 @@ def main():
 
     chosen_year = 20
 
-    # Choose position we want to predict for 
-    choice = 'RB'
-    if choice == 'RB':
-        features = ['Passing_Yds', 'Rush_Yds', 'Receiving_Yds', 'Pass_TD', 'Rush_TD', 'Receiving_TD', 'Age', 'Fumbles', 'Rush_Att']
-    elif choice == 'WR':
-        features = ['Passing_Yds', 'Rush_Yds', 'Receiving_Yds', 'Pass_TD', 'Rush_TD', 'Receiving_TD', 'Age', 'Tgt', 'Rec', 'Fumbles']
-    elif choice == 'QB':
-        features = ['Passing_Yds', 'Rush_Yds', 'Receiving_Yds', 'Pass_TD', 'Rush_TD', 'Receiving_TD', 'Age', 'Cmp','Int', 'Sk', 'Rate']
+    # # Choose position we want to predict for 
+    # choice = 'RB'
+    # if choice == 'RB':
+    #     features = ['Passing_Yds', 'Rush_Yds', 'Receiving_Yds', 'Pass_TD', 'Rush_TD', 'Receiving_TD', 'Age', 'Fumbles', 'Rush_Att']
+    # elif choice == 'WR':
+    #     features = ['Passing_Yds', 'Rush_Yds', 'Receiving_Yds', 'Pass_TD', 'Rush_TD', 'Receiving_TD', 'Age', 'Tgt', 'Rec', 'Fumbles']
+    # elif choice == 'QB':
+    #     features = ['Passing_Yds', 'Rush_Yds', 'Receiving_Yds', 'Pass_TD', 'Rush_TD', 'Receiving_TD', 'Age', 'Cmp','Int', 'Sk', 'Rate']
 
-    X = df[chosen_year][features]
-    y = df[chosen_year]['Fantasy_Points']
+    # X = df[chosen_year][features]
+    # y = df[chosen_year]['Fantasy_Points']
 
-    # Split the data into training, validation, and testing sets
-    X_train, X_valtest, y_train, y_valtest = train_test_split(X, y, test_size=0.2, random_state=42)
-    X_val, X_test, y_val, y_test = train_test_split(X_valtest, y_valtest, test_size=0.5, random_state=42)
+    # # Split the data into training, validation, and testing sets
+    # X_train, X_valtest, y_train, y_valtest = train_test_split(X, y, test_size=0.2, random_state=42)
+    # X_val, X_test, y_val, y_test = train_test_split(X_valtest, y_valtest, test_size=0.5, random_state=42)
 
-    # Define the hyperparameters to be tuned
-    alphas = [0.01, 0.1, 1, 10, 100]
+    # # Define the hyperparameters to be tuned
+    # alphas = [0.01, 0.1, 1, 10, 100]
 
-    # Initialize variables to keep track of best hyperparameters and performance
-    best_alpha = None
-    best_mse = float('inf')
-    best_r2 = -float('inf')
+    # # Initialize variables to keep track of best hyperparameters and performance
+    # best_alpha = None
+    # best_mse = float('inf')
+    # best_r2 = -float('inf')
 
-    # Loop over hyperparameters and fit Ridge regression models
-    for alpha in alphas:
-        # Define the Ridge regression model
-        ridge_model = Ridge(alpha=alpha)
+    # # Loop over hyperparameters and fit Ridge regression models
+    # for alpha in alphas:
+    #     # Define the Ridge regression model
+    #     ridge_model = Ridge(alpha=alpha)
 
-        # Train the Ridge regression model on the training set
-        ridge_model.fit(X_train, y_train)
+    #     # Train the Ridge regression model on the training set
+    #     ridge_model.fit(X_train, y_train)
 
-        # Generate predictions on the validation set
-        y_val_pred = ridge_model.predict(X_val)
+    #     # Generate predictions on the validation set
+    #     y_val_pred = ridge_model.predict(X_val)
 
-        # Calculate the mean squared error and R-squared value on the validation set
-        val_mse = mean_squared_error(y_val, y_val_pred)
-        val_r2 = r2_score(y_val, y_val_pred)
-        print(alpha)
-        print(round(val_mse, 3))
-        print(round(val_r2,5))
-        # Check if the current model has better performance than previous models
-        if val_mse < best_mse:
-            best_alpha = alpha
-            best_mse = val_mse
-            best_r2 = val_r2
+    #     # Calculate the mean squared error and R-squared value on the validation set
+    #     val_mse = mean_squared_error(y_val, y_val_pred)
+    #     val_r2 = r2_score(y_val, y_val_pred)
+    #     print(alpha)
+    #     print(round(val_mse, 3))
+    #     print(round(val_r2,5))
+    #     # Check if the current model has better performance than previous models
+    #     if val_mse < best_mse:
+    #         best_alpha = alpha
+    #         best_mse = val_mse
+    #         best_r2 = val_r2
 
-    # Concatenate the training and validation sets for the final model
-    X_train_val = pd.concat([X_train, X_val], axis=0)
-    y_train_val = pd.concat([y_train, y_val], axis=0)
+    # # Concatenate the training and validation sets for the final model
+    # X_train_val = pd.concat([X_train, X_val], axis=0)
+    # y_train_val = pd.concat([y_train, y_val], axis=0)
 
-    # Fit the Ridge regression model with the best hyperparameters on the combined training and validation set
-    ridge_model = Ridge(alpha=best_alpha)
-    ridge_model.fit(X_train_val, y_train_val)
+    # # Fit the Ridge regression model with the best hyperparameters on the combined training and validation set
+    # ridge_model = Ridge(alpha=best_alpha)
+    # ridge_model.fit(X_train_val, y_train_val)
 
-    # Generate predictions on the testing set
-    y_pred = ridge_model.predict(X_test)
+    # # Generate predictions on the testing set
+    # y_pred = ridge_model.predict(X_test)
 
-    # Calculate the mean squared error and R-squared value on the testing set
-    mse = mean_squared_error(y_test, y_pred)
-    r2 = r2_score(y_test, y_pred)
+    # # Calculate the mean squared error and R-squared value on the testing set
+    # mse = mean_squared_error(y_test, y_pred)
+    # r2 = r2_score(y_test, y_pred)
 
     from sklearn.model_selection import GridSearchCV
     # Choose position we want to predict for 
     choice = 'RB'
-    if choice == 'RB':
-        features = ['Passing_Yds', 'Rush_Yds', 'Receiving_Yds', 'Pass_TD', 'Rush_TD', 'Receiving_TD', 'Age', 'Fumbles', 'Rush_Att']
-    elif choice == 'WR':
-        features = ['Passing_Yds', 'Rush_Yds', 'Receiving_Yds', 'Pass_TD', 'Rush_TD', 'Receiving_TD', 'Age', 'Tgt', 'Rec', 'Fumbles']
-    elif choice == 'QB':
-        features = ['Passing_Yds', 'Rush_Yds', 'Receiving_Yds', 'Pass_TD', 'Rush_TD', 'Receiving_TD', 'Age', 'Cmp','Int', 'Sk', 'Rate']
+    # if choice == 'RB':
+    #     features = ['Passing_Yds', 'Rush_Yds', 'Receiving_Yds', 'Pass_TD', 'Rush_TD', 'Receiving_TD', 'Age', 'Fumbles', 'Rush_Att']
+    # elif choice == 'WR':
+    #     features = ['Passing_Yds', 'Rush_Yds', 'Receiving_Yds', 'Pass_TD', 'Rush_TD', 'Receiving_TD', 'Age', 'Tgt', 'Rec', 'Fumbles']
+    # elif choice == 'QB':
+    #     features = ['Passing_Yds', 'Rush_Yds', 'Receiving_Yds', 'Pass_TD', 'Rush_TD', 'Receiving_TD', 'Age', 'Cmp','Int', 'Sk', 'Rate']
 
-    # Extract the relevant features and target variable
-    X = df[chosen_year][features]
-    y = df[chosen_year]['Fantasy_Points']
+    # # Extract the relevant features and target variable
+    # X = df[chosen_year][features]
+    # y = df[chosen_year]['Fantasy_Points']
+    X_list = []
+    y_list = []
+
+    for year in df:
+        choice = 'QB'
+        if choice == 'RB':
+            X = year[['Passing_Yds', 'Rush_Yds', 'Receiving_Yds', 'Pass_TD', 'Rush_TD', 'Receiving_TD', 'Age', 'Fumbles', 'Rush_Att']]
+            y = year['Fantasy_Points'] 
+        elif choice == 'WR':
+            X = year[['Passing_Yds', 'Rush_Yds', 'Receiving_Yds', 'Pass_TD', 'Rush_TD', 'Receiving_TD', 'Age', 'Tgt', 'Rec', 'Fumbles']]
+            y = year['Fantasy_Points']
+        elif choice == 'QB':
+            X = year[['Passing_Yds', 'Rush_Yds', 'Receiving_Yds', 'Pass_TD', 'Rush_TD', 'Receiving_TD', 'Age', 'Int', 'Sk', 'Rate']]
+            y = year['Fantasy_Points']
+        
+        X_list.append(X)
+        y_list.append(y)
+
+    X_all_years = pd.concat(X_list)
+    y_all_years = pd.concat(y_list)
+
 
     # Split the data into training, validation, and testing sets
-    X_train, X_valtest, y_train, y_valtest = train_test_split(X, y, test_size=0.2, random_state=42)
+    X_train, X_valtest, y_train, y_valtest = train_test_split(X_all_years, y_all_years, test_size=0.2, random_state=42)
     X_val, X_test, y_val, y_test = train_test_split(X_valtest, y_valtest, test_size=0.5, random_state=42)
 
     # Define the hyperparameters to be tuned
@@ -418,6 +439,8 @@ def main():
     print("Mean squared error:", round(mse, 3))
     print("R-squared value:", round(r2,3))
 
+    print("====================  ====================")
+
     player_name = "Jonathan Taylor"
 
     # Select the row corresponding to the player
@@ -438,7 +461,7 @@ def main():
 
     df[chosen_year][df[chosen_year]["Player"].str.strip() == player_name]
 
-    print("==================== new section ====================")
+    print("====================  ====================")
 
     # Page URL ---- RB
     url = 'https://www.fantasypros.com/nfl/projections/wr.php?week=draft'
@@ -481,7 +504,7 @@ def main():
 
     """
 
-    print("==================== new section ====================")
+    print("====================  ====================")
 
     # Page URL ---- RB
     url = 'https://www.fantasypros.com/nfl/projections/rb.php?week=draft'
@@ -489,110 +512,6 @@ def main():
     # Open and Pass url to Beautiful Soup
     html = urlopen(url)
     projections = BeautifulSoup(html, features="lxml")
-
-    # Headers
-    headers = projections.findAll('tr')[1]
-    headers = [i.getText() for i in headers.findAll('th')]
-
-    # Check out headers 
-    # print(headers)
-
-    # Get table rows into an array
-    rows = projections.findAll('tr')[1:]
-
-    # Get stats from each row
-    proj = []
-    for x in range(1,len(rows)):
-        proj.append([col.getText() for col in rows[x].findAll('td')])
-
-    projections_df = pd.DataFrame(proj, columns = headers[0:])
-
-    # Keep only the player name and projections columns
-    projections_df = projections_df[['Player', 'FPTS']]
-
-    # Split the Player column that containes Name and Team into separate 'Player' and 'Tm' columns
-    projections_df[['Player', 'Tm']] = projections_df['Player'].str.extract(r'^(\S+\s+\S+)\s+(.*)$')
-
-    projections_df.drop('Tm', axis=1, inplace=True)
-
-    # Quick Check 
-    #projections_df.head()
-
-    #print(projections_df)
-
-    #playerlist = projections_df['Player'].values
-    #print(playerlist)
-
-    player_df = projections_df[['Player']].copy()
-    #print(player_df)
-
-    predicted_scores = []
-    calc_scores = []
-    enough = 0
-
-    for playername in player_df['Player']:
-
-        if enough == 30:
-            break
-        else:
-            enough+=1
-
-        calc_scores.append(df[22].loc[df[22]["Player"].str.strip() == playername, "Fantasy_Points"].values[0])
-
-        #print(playername)
-        #print(type(playername))
-        #if type(playername) == float:
-            #continue
-
-        # Select the row corresponding to the player
-        player_row = df[22][df[22]['Player'].str.strip() == playername]
-
-        # Extract the predictor variables for the player
-        if choice == 'QB':
-            player_data = player_row[['Passing_Yds', 'Rush_Yds', 'Receiving_Yds', 'Pass_TD', 'Rush_TD', 'Receiving_TD', 'Age', 'Int', 'Sk', 'Rate']]
-        elif choice == 'RB':
-            player_data = player_row[['Passing_Yds', 'Rush_Yds', 'Receiving_Yds', 'Pass_TD', 'Rush_TD', 'Receiving_TD', 'Age', 'Fumbles', 'Rush_Att']]
-        elif choice =='WR':
-            player_data = player_row[['Passing_Yds', 'Rush_Yds', 'Receiving_Yds', 'Pass_TD', 'Rush_TD', 'Receiving_TD', 'Age', 'Tgt', 'Rec', 'Fumbles']]
-    
-        # Make a prediction using the model
-        predicted_score = grid_search.predict(player_data)
-        predicted_scores.append(predicted_score[0])
-
-    #print(playername + " " + str(predicted_score))
-
-    parsed_projections_df = projections_df.head(30).copy()
-    parsed_projections_df['FPTS'] = parsed_projections_df['FPTS'].astype(float)
-
-    parsed_projections_df['RidgeReg pts'] = predicted_scores
-    parsed_projections_df['true pts'] = calc_scores
-
-    parsed_projections_df['FPTS err'] = abs(parsed_projections_df['FPTS']-parsed_projections_df['true pts']) / parsed_projections_df['true pts']
-    parsed_projections_df['RidgeReg err'] = abs(parsed_projections_df['RidgeReg pts']-parsed_projections_df['true pts']) / parsed_projections_df['true pts']
-
-    pd.set_option('display.max_rows',500)
-    pd.set_option('display.max_columns',504)
-    pd.set_option('display.width',1000)
-
-    print(parsed_projections_df)
-
-    avg_fpts_err = parsed_projections_df['FPTS err'].mean()
-    avg_ridgereg_err = parsed_projections_df['RidgeReg err'].mean()
-
-    print("fpts accuracy err = " + str(avg_fpts_err))
-    print("ridgereg accuracy err = " + str(avg_ridgereg_err))
-
-    """now qb
-
-    """
-    print("==================== new section ====================")
-
-    # Page URL ---- RB
-    url = 'https://www.fantasypros.com/nfl/projections/rb.php?week=draft'
-
-    # Open and Pass url to Beautiful Soup
-    html = urlopen(url)
-    projections = BeautifulSoup(html)
 
     # Headers
     headers = projections.findAll('tr')[1]
