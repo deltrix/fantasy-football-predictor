@@ -19,6 +19,6 @@ python ridgereg.py:
     trains and prints results of ridge regression
 
 
-python testing.py:
+python neuralnetwork.py:
 
     trains and prints results of a neural network
