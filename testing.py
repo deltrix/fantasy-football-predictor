@@ -1,40 +1,19 @@
 import json
-import csv
-
-csv.field_size_limit(100000000)
-
-import time
-
 # Import scraping modules
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
-
-# Import data manipulation modules
 import pandas as pd
-import numpy as np
-import seaborn as sns
+
 
 # Import data visualization modules
-import matplotlib as mpl
 import matplotlib.pyplot as plt
-
-from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error, r2_score
-from sklearn.preprocessing import StandardScaler
-from sklearn.svm import SVC
-from sklearn.linear_model import Ridge
-from sklearn.linear_model import SGDRegressor
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.metrics import mean_squared_error
 import torch
 import torch.nn.functional as F
 from torch.utils.data import TensorDataset, DataLoader
-from sklearn.metrics import mean_squared_error, r2_score
-import numpy as np
-import logging
 
-logging.basicConfig(level=logging.INFO)
-
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', None)
 
@@ -76,19 +55,20 @@ def readJSON(year):
 
 
 # Train and evaluate model
+
 def train_and_evaluate_model(model, train_dataloader, val_dataloader, test_dataloader, criterion, optimizer,
-                             num_epochs=1000, device="cpu"):
+                             num_epochs=1000, patience=5):
     train_losses = []
     val_losses = []
 
-    # Move model to device
-    model.to(device)
+    # Initialize early stopping variables
+    best_val_loss = float('inf')
+    epochs_without_improvement = 0
 
     for epoch in range(num_epochs):
         train_loss = 0.0
         model.train()
         for i, (inputs, targets) in enumerate(train_dataloader):
-            inputs, targets = inputs.to(device), targets.to(device)
             optimizer.zero_grad()
             outputs = model(inputs)
             targets = targets.view(-1, 1)  # reshape the target tensor
@@ -102,7 +82,6 @@ def train_and_evaluate_model(model, train_dataloader, val_dataloader, test_datal
         model.eval()
         with torch.no_grad():
             for inputs, targets in val_dataloader:
-                inputs, targets = inputs.to(device), targets.to(device)
                 outputs = model(inputs)
                 targets = targets.view(-1, 1)  # reshape the target tensor
                 loss = criterion(outputs, targets)
@@ -113,12 +92,23 @@ def train_and_evaluate_model(model, train_dataloader, val_dataloader, test_datal
 
         print(f"Epoch {epoch + 1} - Train Loss: {train_losses[-1]:.4f} - Val Loss: {val_losses[-1]:.4f}")
 
+        # Check if validation loss has improved
+        if val_losses[-1] < best_val_loss:
+            best_val_loss = val_losses[-1]
+            epochs_without_improvement = 0
+        else:
+            epochs_without_improvement += 1
+
+        # Check if we should stop early
+        if epochs_without_improvement >= patience:
+            print(f"No improvement in validation loss for {patience} epochs. Stopping early.")
+            break
+
     # Evaluate model on test set
     test_loss = 0.0
     model.eval()
     with torch.no_grad():
         for inputs, targets in test_dataloader:
-            inputs, targets = inputs.to(device), targets.to(device)
             outputs = model(inputs)
             loss = criterion(outputs, targets.view(-1, 1))
             test_loss += loss.item()
@@ -128,7 +118,25 @@ def train_and_evaluate_model(model, train_dataloader, val_dataloader, test_datal
     return train_losses, val_losses, test_loss / len(test_dataloader)
 
 
+def predict(model, player_data, categories=None, category_encoders=None):
+    # If categories and encoders are provided, transform the input data
+    if categories is not None and category_encoders is not None:
+        for category, encoder in zip(categories, category_encoders):
+            player_data[category] = encoder.transform(player_data[category])
+
+    # Convert input data to tensor and make prediction
+    input_tensor = torch.Tensor(player_data.values)
+    predicted_score = model(input_tensor)
+
+    return predicted_score.item()
+
+
+
+
 def main():
+    # Set random seed, for reproducibility
+    torch.manual_seed(0)
+
     years = 23
 
     passing_stats = []
@@ -286,33 +294,59 @@ def main():
                 df[i]['Receiving_TD'] * 6 +
                 df[i]['Fumbles'] * -2
         )
-
     # ==================================================
     # NEURAL NETWORK TESTING ==================================================
     # ==================================================
     print("---NEURAL NETWORK TESTING")
 
-    chosen_year = 21
+    chosen_year = 22
 
-    choice = 'QB'
-    if choice == 'RB':
-        X = df[chosen_year][
-            ['Passing_Yds', 'Rush_Yds', 'Receiving_Yds', 'Pass_TD', 'Rush_TD', 'Receiving_TD', 'Age', 'Fumbles',
-             'Rush_Att']]
-        y = df[chosen_year]['Fantasy_Points']
-    elif choice == 'WR':
-        X = df[chosen_year][
-            ['Passing_Yds', 'Rush_Yds', 'Receiving_Yds', 'Pass_TD', 'Rush_TD', 'Receiving_TD', 'Age', 'Tgt', 'Rec',
-             'Fumbles']]
-        y = df[chosen_year]['Fantasy_Points']
-    elif choice == 'QB':
-        X = df[chosen_year][
-            ['Passing_Yds', 'Rush_Yds', 'Receiving_Yds', 'Pass_TD', 'Rush_TD', 'Receiving_TD', 'Age', 'Int', 'Sk',
-             'Rate']]
-        y = df[chosen_year]['Fantasy_Points']
+    # choice = 'QB'
+    # if choice == 'RB':
+    #     X = df[chosen_year][
+    #         ['Passing_Yds', 'Rush_Yds', 'Receiving_Yds', 'Pass_TD', 'Rush_TD', 'Receiving_TD', 'Age', 'Fumbles',
+    #          'Rush_Att']]
+    #     y = df[chosen_year]['Fantasy_Points']
+    # elif choice == 'WR':
+    #     X = df[chosen_year][
+    #         ['Passing_Yds', 'Rush_Yds', 'Receiving_Yds', 'Pass_TD', 'Rush_TD', 'Receiving_TD', 'Age', 'Tgt', 'Rec',
+    #          'Fumbles']]
+    #     y = df[chosen_year]['Fantasy_Points']
+    # elif choice == 'QB':
+    #     X = df[chosen_year][
+    #         ['Passing_Yds', 'Rush_Yds', 'Receiving_Yds', 'Pass_TD', 'Rush_TD', 'Receiving_TD', 'Age', 'Int', 'Sk',
+    #          'Rate']]
+    #     y = df[chosen_year]['Fantasy_Points']
+
+    X_list = []
+    y_list = []
+
+    for year in df:
+        choice = 'WR'
+        if choice == 'RB':
+            X = year[
+                ['Passing_Yds', 'Rush_Yds', 'Receiving_Yds', 'Pass_TD', 'Rush_TD', 'Receiving_TD', 'Age', 'Fumbles',
+                 'Rush_Att']]
+            y = year['Fantasy_Points']
+        elif choice == 'WR':
+            X = year[
+                ['Passing_Yds', 'Rush_Yds', 'Receiving_Yds', 'Pass_TD', 'Rush_TD', 'Receiving_TD', 'Age', 'Tgt', 'Rec',
+                 'Fumbles']]
+            y = year['Fantasy_Points']
+        elif choice == 'QB':
+            X = year[
+                ['Passing_Yds', 'Rush_Yds', 'Receiving_Yds', 'Pass_TD', 'Rush_TD', 'Receiving_TD', 'Age', 'Int', 'Sk',
+                 'Rate']]
+            y = year['Fantasy_Points']
+
+        X_list.append(X)
+        y_list.append(y)
+
+    X_all_years = pd.concat(X_list)
+    y_all_years = pd.concat(y_list)
 
     # Split data into training, validation, and testing sets
-    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
+    X_train, X_val, y_train, y_val = train_test_split(X_all_years, y_all_years, test_size=0.2, random_state=42)
     X_val, X_test, y_val, y_test = train_test_split(X_val, y_val, test_size=0.5, random_state=42)
 
     # Scale features
@@ -322,12 +356,12 @@ def main():
     X_test = scaler.transform(X_test)
 
     # Convert data to PyTorch tensors
-    X_train = torch.tensor(X_train, dtype=torch.float32).to(device)
-    y_train = torch.tensor(y_train.values, dtype=torch.float32).to(device)
-    X_val = torch.tensor(X_val, dtype=torch.float32).to(device)
-    y_val = torch.tensor(y_val.values, dtype=torch.float32).to(device)
-    X_test = torch.tensor(X_test, dtype=torch.float32).to(device)
-    y_test = torch.tensor(y_test.values, dtype=torch.float32).to(device)
+    X_train = torch.tensor(X_train, dtype=torch.float32)
+    y_train = torch.tensor(y_train.values, dtype=torch.float32)
+    X_val = torch.tensor(X_val, dtype=torch.float32)
+    y_val = torch.tensor(y_val.values, dtype=torch.float32)
+    X_test = torch.tensor(X_test, dtype=torch.float32)
+    y_test = torch.tensor(y_test.values, dtype=torch.float32)
 
     # Define dataloader objects
     train_dataset = TensorDataset(X_train, y_train)
@@ -357,17 +391,17 @@ def main():
     hidden_dim = 64
     dropout_prob = 0.1
     lr = 0.001
-    num_epochs = 100
+    num_epochs = 300
     patience = 10
 
-    model = TwoLayerMLP(input_dim, hidden_dim, dropout_prob).to(device)
+    model = TwoLayerMLP(input_dim, hidden_dim, dropout_prob)
     criterion = torch.nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
     # Train and evaluate model
     train_losses, val_losses, test_loss = train_and_evaluate_model(model, train_dataloader, val_dataloader,
                                                                    test_dataloader, criterion, optimizer,
-                                                                   num_epochs=100, device=device)
+                                                                   num_epochs=num_epochs, patience=patience)
 
     # Plot training and validation losses
     plt.plot(train_losses, label='Train Loss')
@@ -375,17 +409,23 @@ def main():
     plt.legend()
     plt.show()
 
-    # Evaluate model on test set
+
+    # put model in evaluation mode
+    model.eval()
+
+    # make predictions
     with torch.no_grad():
-        test_loss = 0.0
-        for inputs, targets in test_dataloader:
-            outputs = model(inputs)
-            targets = targets.view(-1, 1)  # reshape the target tensor
-            loss = criterion(outputs, targets)
-            test_loss += loss.item()
+        preds = model(X_test)
 
-    print(f'Test Loss: {test_loss / len(test_dataloader):.4f}')
+    # convert preds tensor to numpy array
+    preds_np = preds.numpy()
 
+    test_players = df[22]["Player"]
 
+    # for i, player in enumerate(test_players):
+    #     print("Predicted fantasy points for", player, ":", preds_np[i])
+
+    mse = mean_squared_error(y_test, preds_np)
+    print('mean squared error: ', mse)
 if __name__ == '__main__':
     main()
