@@ -322,7 +322,7 @@ def main():
     y_list = []
 
     for year in df:
-        choice = 'WR'
+        choice = 'QB'
         if choice == 'RB':
             X = year[
                 ['Passing_Yds', 'Rush_Yds', 'Receiving_Yds', 'Pass_TD', 'Rush_TD', 'Receiving_TD', 'Age', 'Fumbles',
