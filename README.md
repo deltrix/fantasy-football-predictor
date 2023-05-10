@@ -5,13 +5,20 @@ their previous statistics and current circumstances.
 To run our code:
 
 python datagenerator.py:
+
     create a folder of JSON files used in the models
 
-python linreg.py
+
+python linreg.py:
+
     trains and prints results of linear regression
 
-python ridgereg.py
+
+python ridgereg.py:
+
     trains and prints results of ridge regression
 
-python testing.py
+
+python testing.py:
+
     trains and prints results of a neural network
